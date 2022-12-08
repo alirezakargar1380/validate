@@ -1,0 +1,13 @@
+{
+  "name": "validate",
+  "version": "1.0.0",
+  "description": "validation data in javascript",
+  "main": "lib/index.js",
+  "types": "lib",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p ."
+  },
+  "author": "alireza kargar",
+  "license": "ISC"
+}
