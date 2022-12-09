@@ -1,5 +1,7 @@
 import { join } from './utils';
 import Property from './property';
+import Validators from './validators';
+import Messages from './messages';
 
 type Type = Function | string
 interface PropertyDefinition {
@@ -33,11 +35,15 @@ export default class Schema
 {
     public definition: any
     public hooks: any
+    public validators: any
+    public messages: any
     public props: { [key: string]: any }
     constructor(definition: any) {
         this.hooks = []
         this.props = {}
         this.definition = definition
+        this.validators = Object.assign({}, Validators);
+        this.messages = Object.assign({}, Messages);
         Object.keys(definition).forEach((k) => {
             this.path(k, definition[k])
         });
@@ -81,6 +87,7 @@ export default class Schema
 
         // No rules?
         if (!rules) return prop;
+        console.log(rules)
 
         // type shorthand
         // `{ name: String }`
@@ -109,22 +116,22 @@ export default class Schema
         let nested = false;
 
         // Check for nested objects
-        // for (const key of keys) {
-        //     if (typeof prop[key] == 'function') continue;
-        //     prop.type(Object);
-        //     nested = true;
-        //     break;
-        // }
+        for (const key of keys) {
+            if (typeof prop[key] == 'function') continue;
+            prop.type(Object);
+            nested = true;
+            break;
+        }
 
-        // keys.forEach(key => {
-        //     const rule = rules[key];
+        keys.forEach(key => {
+            const rule = rules[key];
 
-        //     if (nested) {
-        //         return this.path(join(key, path), rule);
-        //     }
+            if (nested) {
+                return this.path(join(key, path), rule);
+            }
 
-        //     prop[key](rule);
-        // });
+            prop[key](rule);
+        });
 
         // return prop;
     }
@@ -147,12 +154,13 @@ export default class Schema
         // }
 
         for (const [path, prop] of (<any>Object).entries(this.props)) {
-            console.log(prop)
-            console.log(prop.required())
-            console.log(path)
-            console.log(prop.validate())
+            // console.log(prop.registry)
+            // prop.required()
+            // prop.allow(false)
+            const err = prop.validate()
+            if (err) errors.push(err);
 
-            // enumerate(path, obj, (key, value) => {
+            // enumerate(path, target, (key, value) => {
             //     const err = prop.validate(value, obj, key);
             //     if (err) errors.push(err);
             // });

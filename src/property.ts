@@ -104,8 +104,13 @@ export default class Property {
      */
 
     required(bool = true) {
-        console.log('im here')
+        console.log('im prop required')
         return this._register('required', [bool]);
+    }
+
+    allow(bool = true) {
+        console.log('im prop allow')
+        return this._register('allow', [bool]);
     }
 
     /**
@@ -130,7 +135,7 @@ export default class Property {
         const types = Object.keys(this.registry);
 
         for (const type of types) {
-            const err = this._run(type, value, ctx, path);
+            const err: any = this._run(type, value, ctx, path);
             if (err) return err;
         }
 
@@ -141,9 +146,16 @@ export default class Property {
         if (!this.registry[type]) return;
         const schema = this._schema;
         const { args, fn } = this.registry[type];
+        if (this.registry['required']?.args[0] === true && type === 'allow' && args[0] === false) return this._error('allowAndRequired', ctx, args, path)
         const validator = fn || schema.validators[type];
         const valid = validator(value, ctx, ...args, path);
-        if (!valid) return this._error(type, ctx, args, path);
+        if (!valid) {
+            // console.log('----------------------------------')
+            // console.log(valid)
+            // console.log(type)
+            // console.log(path)
+            return this._error(type, ctx, args, path)
+        }
     }
 
     _error(type: any, ctx: any, args: any, path: any) {
@@ -158,6 +170,7 @@ export default class Property {
             message = message(path, ctx, ...args);
         }
 
+        // console.log(message)
         return new ValidationError(message, path);
     }
 
